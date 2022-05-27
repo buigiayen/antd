@@ -1,6 +1,6 @@
 // @ts-ignore
 
-/* eslint-disable */
+import ApiCaller from './apirs';
 import { request } from 'umi';
 /** 获取当前的用户 GET /api/currentUser */
 
@@ -72,3 +72,10 @@ export async function removeRule(options) {
     ...(options || {}),
   });
 }
+export async function GETBucket() {
+  return ApiCaller.get('/Bucket');
+}
+export async function GETFileBucket(bucket) {
+  return ApiCaller.get('/GetFileBucket?bucket=' + bucket);
+}
+

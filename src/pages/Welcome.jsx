@@ -1,53 +1,94 @@
-import { PageContainer } from '@ant-design/pro-components';
-import { Button, Card, Form, Select } from 'antd';
-import { useIntl } from 'umi';
+import { PageContainer, ProTable } from '@ant-design/pro-components';
+import { Button, Card, Form, Input, Select } from 'antd';
+import { useState } from 'react';
+import { GETBucket, GETFileBucket } from '../services/ant-design-pro/api';
+
 const Welcome = () => {
-  const onjec = [
-    {
-      Key: 1,
-      Object: 'Value 1',
-    },
-    {
-      Key: 2,
-      Object: 'Value 2',
-    },
-  ];
-  const intl = useIntl();
-  const Option = Select;
-  const onChange = (value) => {
+  const { Option } = Select;
+  const [Bucket, SetBucket] = useState();
+  const [IP, SetIP] = useState([]);
+  const [form] = Form.useForm();
+  const [ListFileBucket, setListFileBucket] = useState();
+  const GetBucket = async () => {
+    let data = [];
+    data = await GETBucket();
+    SetIP(data.data.data);
+  };
+  const GetFileBucket = async () => {
+    let data = [];
+    data = await GETFileBucket(Bucket);
+    console.log(data.data.data);
+    setListFileBucket(data.data);
+  };
+  const onFinish = (values) => {
+    console.log('Finish:', values);
+  };
+  const handleChange = (value) => {
+    SetBucket(value);
     console.log(`selected ${value}`);
   };
-
-  const onSearch = (value) => {
-    console.log('search:', value);
-  };
+  const columns = [
+    {
+      title: 'Hiển thị',
+      dataIndex: 'File',
+    },
+    {
+      title: 'Thao tác',
+      dataIndex: 'Action',
+    },
+  ];
   return (
     <PageContainer>
       <Card>
-        <Form.Item name="note" label="Note">
-          <Select
-            size="small"
-            showSearch
-            placeholder="Select a person"
-            optionFilterProp="children"
-            onChange={onChange}
-            onSearch={onSearch}
-            filterOption={(input, option) =>
-              option.children.toLowerCase().includes(input.toLowerCase())
-            }
-          >
-            {onjec.map((values, index) => {
-              return (
-                <Option key={index} value={values.Key}>
-                  {values.Object}
-                </Option>
-              );
-            })}
-          </Select>
-        </Form.Item>
-        <br />
-        <Button size="small">Ok</Button>
+        <Form form={form} name="horizontal_login" layout="inline" onFinish={onFinish}>
+          <Form.Item label={'IP'}>
+            <Input value={IP} size="small" />
+          </Form.Item>
+
+          <Form.Item label={'Bucket'}>
+            <Select style={{ width: 120 }} onChange={handleChange}>
+              {IP.map((rs, index) => {
+                return (
+                  <Option key={index} value={rs.bucketName}>
+                    {rs.bucketName}
+                  </Option>
+                );
+              })}
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button size="small" onClick={GetBucket}>
+              GET IP
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button size="small" onClick={GetFileBucket}>
+              Lấy dữ liệu
+            </Button>
+          </Form.Item>
+        </Form>
       </Card>
+
+      <Form.Item>
+        <ProTable
+          rowKey="key"
+          search={{
+            labelWidth: 120,
+          }}
+          request={async (params) => {
+            {
+              return ListFileBucket;
+            }
+          }}
+          columns={columns}
+          size="small"
+          rowSelection={{
+            onChange: (_, selectedRows) => {
+              setSelectedRows(selectedRows);
+            },
+          }}
+        />
+      </Form.Item>
     </PageContainer>
   );
 };
